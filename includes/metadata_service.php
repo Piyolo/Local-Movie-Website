@@ -145,8 +145,16 @@ function tmdb_search_best(string $title, ?int $year): ?array
     }
 
     $r = $best['r'];
+    // TMDB search results carry genre_ids as an array (never cast it to string).
+    $genreIds = $r['genre_ids'] ?? [];
+    if (is_string($genreIds)) {
+        $genreIds = explode(',', $genreIds);
+    }
+    if (!is_array($genreIds)) {
+        $genreIds = [];
+    }
     $genres = [];
-    foreach (explode(',', (string)($r['genre_ids'] ?? '')) as $gid) {
+    foreach ($genreIds as $gid) {
         $name = tmdb_genre_name((int)$gid);
         if ($name !== null) {
             $genres[] = $name;
@@ -292,6 +300,7 @@ function cache_artwork(string $movieId, ?string $posterPath, ?string $backdropPa
 
 function metadata_needs_lookup(?array $entry, bool $configured, int $now): bool
 {
+    global $CONFIG;
     if (!$configured || $entry === null) {
         return false;
     }

@@ -111,6 +111,11 @@ Add `includes\config.local.php` with your TMDB key (see README). Posters,
 overviews, genres, runtimes, and ratings then appear. Enrichment runs in small
 background batches after the page loads — never blocking scanning or playback.
 
+Poster and banner images are downloaded **once** into `assets\posters\` and
+`assets\backdrops\` and served from your PC afterwards — no internet needed
+for images after the first lookup. Movies TMDB can't match (or a missing key)
+keep the generated title-cover art instead, so the site never looks empty.
+
 - **Refresh one movie**: `api/metadata.php?action=refresh&id=<movie id>`
 - **Refresh everything**: `api/metadata.php?action=refresh&all=1`
 

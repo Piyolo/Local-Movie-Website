@@ -85,8 +85,9 @@ return ['tmdb' => ['api_key' => 'YOUR_TMDB_KEY_V3']];
 ```
 
 Without a key the app is fully functional: filename-derived titles/years,
-fallback posters, an honest "No TMDB API key configured" note. TMDB
-attribution is shown wherever metadata is displayed.
+generated title-cover art, an honest "No TMDB API key configured" note.
+Poster/banner images are downloaded locally on first enrichment, then served
+from your PC. TMDB attribution is shown wherever metadata is displayed.
 
 ## Project layout
 
