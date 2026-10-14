@@ -190,9 +190,38 @@
 
   /* ---------------- poster / card rendering ---------------- */
 
+  /* Deterministic per-title hue (0–359): the same movie always gets the same
+   * generated cover art, and different movies look different. */
+  MW.titleHue = function (text) {
+    var s = String(text || 'movie');
+    var hash = 0;
+    for (var i = 0; i < s.length; i++) hash = ((hash * 31) + s.charCodeAt(i)) >>> 0;
+    return hash % 360;
+  };
+
+  /* Up-to-two-letter monogram: "The Dark Knight" -> "DK", "Weapons" -> "W". */
+  MW.titleInitials = function (text) {
+    var words = String(text || '').split(/[\s\-._:]+/).filter(Boolean);
+    if (!words.length) return 'M';
+    var keep = words.filter(function (w) { return !/^(the|a|an|of|and|le|la|el)$/i.test(w); });
+    var src = keep.length ? keep : words;
+    if (src.length === 1) return src[0].charAt(0).toUpperCase();
+    return (src[0].charAt(0) + src[1].charAt(0)).toUpperCase();
+  };
+
+  /* Title-hue gradient for hero/details backdrops when no real banner exists. */
+  MW.artGradient = function (title) {
+    var hue = MW.titleHue(title);
+    return 'radial-gradient(95% 120% at 22% 8%, hsla(' + hue + ', 68%, 44%, .5), transparent 62%), ' +
+      'linear-gradient(160deg, hsl(' + hue + ', 40%, 21%), #0a0c11 80%)';
+  };
+
   MW.posterFallback = function (title, year) {
+    var t = title || 'Movie';
     var wrap = MW.el('div', { class: 'card-poster-fallback' });
-    wrap.appendChild(MW.el('span', { text: title || 'Movie' }));
+    wrap.style.setProperty('--fb-h', String(MW.titleHue(t)));
+    wrap.appendChild(MW.el('span', { class: 'fp-initials', text: MW.titleInitials(t) }));
+    wrap.appendChild(MW.el('span', { class: 'fp-title', text: t }));
     if (year) wrap.appendChild(MW.el('span', { class: 'fp-year', text: String(year) }));
     return wrap;
   };

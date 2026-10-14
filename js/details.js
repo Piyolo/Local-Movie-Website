@@ -51,6 +51,7 @@
         }
 
         if (movie.backdrop) $('details-backdrop').style.backgroundImage = 'url("' + movie.backdrop + '")';
+        else $('details-backdrop').style.backgroundImage = MW.artGradient(movie.title);
 
         var poster = $('details-poster');
         if (movie.poster) {

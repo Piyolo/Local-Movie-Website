@@ -36,9 +36,12 @@
     hero.hidden = false;
 
     var bd = document.getElementById('hero-backdrop');
+    /* Real banner when TMDB provided one; otherwise a title-hue generated
+     * gradient (a portrait poster stretched across the hero reads as blur). */
     bd.style.backgroundImage = movie.backdrop
       ? 'url("' + movie.backdrop + '")'
-      : (movie.poster ? 'url("' + movie.poster + '")' : '');
+      : MW.artGradient(movie.title);
+    bd.style.backgroundColor = '';
 
     document.getElementById('hero-title').textContent = movie.title;
 
