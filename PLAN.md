@@ -75,6 +75,16 @@ Track progress here. Keep the app runnable at every step.
 - [x] Player TV safeguards: 12s stall detection (5.1-AAC explanation), MP4/H.264
       canPlayType pre-check, URLSearchParams polyfill
 - [x] TV-compatible-copy helper: tools/make_tv_copy.ps1 (stereo remux, original untouched)
+- [x] TV fullscreen: CSS pseudo-fullscreen on coarse-pointer devices (no system-player
+      takeover); Back/Esc exits fullscreen before leaving the page; desktop keeps
+      native Fullscreen API
+- [x] Controls never auto-hide on TV/touch (mouse devices keep the 3.4s cinematic hide)
+- [x] Subtitles: English auto-selected on every load (per user request; saved prefs
+      no longer affect it) — browser-verified incl. poisoned-pref test
+- [x] Native Windows folder picker: tools/folder_picker.ps1 (Explorer-style dialog,
+      -SelfTest compile check) + includes/native_picker.php (fixed proc_open command,
+      120s timeout) + api/library.php action=native_pick (admin + CSRF + host-only)
+      + settings.js UI with in-site fallback — live-tested end-to-end by user
 - [x] Documented untested TV behavior honestly (docs/TV_COMPATIBILITY.md)
 
 ## Phase 8 — Security + docs ✅
@@ -94,6 +104,7 @@ Track progress here. Keep the app runnable at every step.
       unauthorized access denied, traversal denied
 - [x] Browser E2E (PC/Edge): homepage, details, watch (play/resume/seek/subtitles),
       Library Settings (login/status/navigator) — zero console errors
-- [ ] TV retest (Haier Google TV) — pending user; player now degrades with a clear
-      message instead of an endless spinner
+- [x] TV retest (Haier Google TV): playback verified working by device owner;
+      fullscreen-overlay + sticky-controls + auto-English fixes deployed,
+      TV-side fullscreen retest pending
 - [x] Honest summary + known limitations documented

@@ -14,6 +14,7 @@ require __DIR__ . '/../includes/cache.php';
 require __DIR__ . '/../includes/library_config.php';
 require __DIR__ . '/../includes/auth.php';
 require __DIR__ . '/../includes/folder_browser.php';
+require __DIR__ . '/../includes/native_picker.php';
 require __DIR__ . '/../includes/filename_parser.php';
 require __DIR__ . '/../includes/subtitles.php';
 require __DIR__ . '/../includes/scanner.php';
@@ -182,6 +183,14 @@ ok(count($windowsOnly) === 0, 'no system dirs in C:\\ listing');
 ok(folder_browser_resolve('C:\\..\\..\\x') === null, 'browser traversal rejected');
 ok(folder_browser_resolve('not a path') === null, 'browser non-path rejected');
 ok(folder_browser_list('C:\\')['parent'] === null, 'C:\\ has no parent');
+
+/* ---------------- native picker: host detection ---------------- */
+echo "== native picker host detection ==\n";
+ok(picker_request_is_host('127.0.0.1', '192.168.100.2'), 'loopback is the host');
+ok(picker_request_is_host('::1', '192.168.100.2'), 'IPv6 loopback is the host');
+ok(picker_request_is_host('192.168.100.2', '192.168.100.2'), 'PC reaching itself via LAN IP is the host');
+ok(!picker_request_is_host('192.168.100.105', '192.168.100.2'), 'other LAN device is not the host');
+ok(!picker_request_is_host('192.168.100.24', '192.168.100.2'), 'second interface of another machine is not the host');
 
 /* ---------------- path normalization ---------------- */
 echo "== path normalization ==\n";

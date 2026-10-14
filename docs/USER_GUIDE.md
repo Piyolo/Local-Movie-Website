@@ -48,8 +48,11 @@ never modified) and always plays. `.vtt` plays directly. `.ass/.ssa/.sub` are
 discovered and listed but **cannot play in browsers** — convert them to SRT
 first if needed.
 
-**In the player**: open the *Subtitles* menu → *Off* or any language. Your
-choice is remembered for next time. SDH/hearing-impaired variants are labelled.
+**In the player**: **English is selected automatically** whenever the movie
+has an English track — no menu digging needed. Open the *Subtitles* menu to
+switch to another language or *Off* (that choice applies to the current movie;
+the next load starts with English again). SDH/hearing-impaired variants are
+labelled.
 
 New subtitle files appear after the next scan (**Library Settings → Scan
 Library**, or automatically within ~30 s).
@@ -64,9 +67,13 @@ The gear button opens **Library Settings** — the administrator panel.
   unreadable). Your setting is always kept.
 - **Movies discovered** — count from the last successful scan.
 - **Last successful scan** — timestamp.
-- **Change Folder** — drive list (with free space) → folder navigation →
-  *Use this folder*. Only directories are listed; Windows system folders are
-  hidden; the server validates every path.
+- **Change Folder** — on the PC that runs Apache, this opens the **native
+  Windows folder picker** (the same dialog as File Explorer); pick a folder
+  and confirm with *Use this folder*. On a phone or TV it opens the in-site
+  drive/folder list instead — a dialog window can only appear on the PC's own
+  screen, so other devices never get one. Either way, only directories are
+  selectable, Windows system folders are rejected, and the server validates
+  every path.
 - **Use Default Folder** — return to `assets\movies`.
 - **Scan Library** — force a full rescan now (also happens automatically).
 

@@ -12,10 +12,14 @@ what is expected.
 |---|---|
 | PC browsers (Chromium/Edge) | ✅ verified: browse, play, seek, resume, subtitles |
 | Phone browser (Chromium) | ✅ verified by device owner |
-| Smart TV browser | ⚠️ browse verified on a **Haier Google/Android TV**; **playback stalled** — diagnosed as 5.1 AAC audio (see below); TV-side fix pending retest |
+| Smart TV browser | ⚠️ browse + play verified on a **Haier Google/Android TV** (device owner); player overlays/stall fixes deployed, TV-side retest of fullscreen pending |
 | Other TVs (LG webOS, Android TV, Roku…) | ❓ untested — expected to behave like other Chromium/WebKit TV browsers |
 
 ## The one real issue found on TV: 5.1 audio
+
+*Update: after the HTTPS/URL fix, your Haier TV plays these same 5.1 files
+fine — keep this section as the first suspect only if a TV stalls on a movie
+(the player detects a 12-second stall and says so).*
 
 Your movie files (`...AAC5.1-[YTS.MX].mp4`) contain **AAC 5.1 surround** audio.
 Many TV browsers decode only stereo AAC: streaming starts, the audio decoder
@@ -28,12 +32,19 @@ Details: `TROUBLESHOOTING.md → "Playback spins forever on a TV"`.
 
 ## What the player does for TVs
 
+- **Fullscreen never hands off to the system player.** On TV/touch browsers the
+  fullscreen button uses our own full-bleed layout instead of the browser
+  Fullscreen API, so Android-TV browsers can't open their native player overlay
+  on top of ours. Remote Back (or Esc) exits fullscreen first; a second Back
+  leaves the page.
+- **Controls stay visible while playing** on TV/touch devices — they only
+  auto-hide for mouse users (where there is always a way to bring them back).
 - Fail-fast messages instead of silent hangs: 12-second stall detection
   ("This device cannot play the video…") and an upfront `canPlayType` check
   for MP4/H.264 support.
 - Remote-friendly controls: OK = play/pause, ←/→ = ±10 s seek, ↑/↓ = volume,
   C = cycle subtitles, Back/Esc = leave; large 56 px targets; subtitles usable
-  without a pointer.
+  without a pointer. **English subtitles are on by default** when available.
 - `URLSearchParams` polyfill and ES5-style code for older TV browsers.
 - WebVTT subtitles styled larger via `::cue`.
 - Resume works from the server, so starting on the TV continues your PC position.

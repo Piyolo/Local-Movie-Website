@@ -17,9 +17,10 @@ your home Wi-Fi.
 - **Optional TMDB metadata** (posters, overviews, genres) via a key you provide;
   everything works without a key using filename-derived titles and fallback art.
 - **Library Settings**: change the movie folder from the website itself —
-  pick any drive/folder through a protected folder navigator, scan, and see
-  counts and last-scan time. Works with external drives; keeps your choice when
-  a drive is unplugged and recovers when it returns.
+  the **native Windows folder picker** on the PC that runs the server (or the
+  protected in-site navigator on any device), scan, and see counts and
+  last-scan time. Works with external drives; keeps your choice when a drive
+  is unplugged and recovers when it returns.
 
 ## Quick start
 

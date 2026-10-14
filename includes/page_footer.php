@@ -69,6 +69,7 @@ $PAGE_SCRIPTS = $PAGE_SCRIPTS ?? [];
       </div>
       <ul id="ls-drives" class="browser-list" hidden></ul>
       <ul id="ls-dirs" class="browser-list"></ul>
+      <p class="field-hint" id="ls-pick-hint" hidden>Selected in the Windows folder dialog. Click “Use this folder” to save it.</p>
       <div class="dialog-actions">
         <button type="button" class="btn btn-primary" id="ls-select-folder">Use this folder</button>
         <button type="button" class="btn" id="ls-browse-cancel">Cancel</button>

@@ -348,6 +348,20 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .92em; }
   transition: opacity .25s ease;
 }
 .player-controls.hide { opacity: 0; pointer-events: none; }
+
+/* TV/remote pseudo-fullscreen: our stage covers the viewport instead of using
+   the browser Fullscreen API — Android-TV browsers would otherwise hand the
+   video to the system's own native player (an overlay you must Back out of). */
+.player-stage.pseudo-full {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: #000;
+}
+body.pseudo-full-active { overflow: hidden; }
 .pc-row { display: flex; align-items: center; gap: 12px; }
 .pc-btn {
   background: transparent; border: none; color: var(--text); cursor: pointer;

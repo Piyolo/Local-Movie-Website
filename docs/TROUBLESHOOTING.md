@@ -75,6 +75,20 @@ Settings shows *Unavailable*.
 - "Session expired" while using settings: sign in again (passwords and sessions
   are server-enforced; this is normal after closing the browser on some TVs).
 
+## The Windows folder dialog doesn't appear (or says it timed out)
+
+**Symptom:** on the PC, *Change Folder* spins ("Waiting for the Windows folder
+dialog…") and eventually shows an error and the built-in folder list.
+
+- The dialog can **only appear on the PC running Apache** — by design it is
+  rejected for phones/TVs (`host_only`), which use the in-site folder list.
+- Apache must be running in your logged-in desktop session (normal when
+  started from the XAMPP Control Panel). If Apache runs as a Windows service
+  in a hidden session, no window can be shown — the site waits 2 minutes,
+  reports the timeout, and falls back to the in-site list, which always works.
+- The dialog opens on the PC's screen — check behind other windows. You have
+  2 minutes to pick or cancel.
+
 ## Site opens but looks unstyled / broken
 
 - Confirm the URL is exactly `http://<ip>/MovieWebsite/` (capital M and W as

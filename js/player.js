@@ -1,8 +1,9 @@
 /**
  * MovieWebsite — HTML5 player for watch.php.
- * Custom controls (TV-remote friendly), resume, subtitle menu with
- * mid-playback switching and preferred-language memory, playback speed,
- * fullscreen, progress saving, and specific error states.
+ * Custom controls (TV-remote friendly, always visible on TV), resume,
+ * subtitle menu with mid-playback switching and an always-English default,
+ * playback speed, TV-safe fullscreen (CSS pseudo-fullscreen on TV browsers),
+ * progress saving, and specific error states.
  */
 (function () {
   'use strict';
@@ -26,6 +27,16 @@
   var lastSavedAt = 0;
   var hideTimer = null;
   var menuOpen = null;
+
+  // TV / touch-remote environments: there is no pointer to summon controls
+  // that hid themselves, and on Android-TV browsers the Fullscreen API hands
+  // the video to the system's own player (a native UI you must Back out of).
+  // MW.forceTv is a debug/test override.
+  function isTvLike() {
+    return MW.forceTv === true ||
+      !!(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+  }
+  var pseudoFull = false;
 
   function $(id) { return document.getElementById(id); }
 
@@ -152,10 +163,11 @@
   }
 
   function autoSelectSubtitle() {
-    var pref = MW.prefs.getSubtitleLang();
-    if (!pref) return;
+    // Always English when available — evaluated fresh on every load, so saved
+    // preferences no longer affect which subtitles start playing.
     for (var i = 0; i < tracks.length; i++) {
-      if (tracks[i].supported && tracks[i].code && tracks[i].code.toLowerCase() === pref.toLowerCase()) {
+      var code = (tracks[i].code || '').toLowerCase();
+      if (tracks[i].supported && (code === 'en' || code.indexOf('en-') === 0)) {
         selectTrack(tracks[i].id, false);
         return;
       }
@@ -207,6 +219,7 @@
   function showControls() {
     $('controls').classList.remove('hide');
     if (hideTimer) clearTimeout(hideTimer);
+    if (isTvLike()) return; // TV/remote: controls stay visible — nothing to summon them back
     hideTimer = setTimeout(function () {
       if (!video.paused && !menuOpen && $('player-error').hidden) {
         $('controls').classList.add('hide');
@@ -307,6 +320,42 @@
     else video.pause();
   }
 
+  /* ---------------- fullscreen ---------------- */
+
+  function setPseudoFullscreen(on) {
+    if (on === pseudoFull) return;
+    pseudoFull = on;
+    stage.classList.toggle('pseudo-full', on);
+    document.body.classList.toggle('pseudo-full-active', on);
+    if (on) {
+      // Own history entry so the remote's Back button exits fullscreen
+      // (popstate below) instead of leaving the watch page.
+      try { history.pushState({ mwPseudoFull: true }, ''); } catch (e) { /* old browser */ }
+    } else if (history.state && history.state.mwPseudoFull) {
+      history.back(); // consume our entry; the popstate handler no-ops (pseudoFull already false)
+    }
+    showControls();
+  }
+
+  window.addEventListener('popstate', function () {
+    if (pseudoFull) setPseudoFullscreen(false); // Back exits fullscreen, stays on page
+  });
+
+  function toggleFullscreen() {
+    if (isTvLike()) {
+      // Never use the Fullscreen API on TVs: Android-TV browsers respond by
+      // opening their own native player over the page. Our own full-bleed
+      // stage keeps our controls on screen instead.
+      setPseudoFullscreen(!pseudoFull);
+      return;
+    }
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    } else if (stage.requestFullscreen) stage.requestFullscreen();
+    else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+    else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen(); // iOS
+  }
+
   function wireEvents() {
     $('pc-play').addEventListener('click', togglePlay);
     $('bigplay').addEventListener('click', togglePlay);
@@ -397,13 +446,7 @@
       showControls();
     });
 
-    $('pc-full').addEventListener('click', function () {
-      if (document.fullscreenElement || document.webkitFullscreenElement) {
-        (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-      } else if (stage.requestFullscreen) stage.requestFullscreen();
-      else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
-      else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen(); // iOS
-    });
+    $('pc-full').addEventListener('click', toggleFullscreen);
 
     $('player-retry').addEventListener('click', function () {
       $('player-error').hidden = true;
@@ -447,7 +490,8 @@
           break;
         }
         case 'Escape':
-          if (document.fullscreenElement) document.exitFullscreen();
+          if (pseudoFull) setPseudoFullscreen(false);
+          else if (document.fullscreenElement) document.exitFullscreen();
           else history.back();
           break;
       }

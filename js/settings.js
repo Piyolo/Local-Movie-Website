@@ -12,6 +12,7 @@
 
   var csrf = null;
   var isAdmin = false;
+  var isHost = false;   // this device is the PC running Apache (native dialog OK)
   var lastFocus = null;
 
   function $(id) { return document.getElementById(id); }
@@ -95,6 +96,7 @@
 
   function renderStatus(data) {
     var lib = data.library || {};
+    isHost = !!data.is_host;
     $('ls-current-path').textContent = lib.path || '—';
     var badge = $('ls-source-badge');
     badge.textContent = lib.source === 'custom' ? 'custom folder' : 'default';
@@ -170,6 +172,7 @@
   function openBrowser() {
     browsePath = null;
     show('ls-browser');
+    $('ls-pick-hint').hidden = true;
     $('ls-browse-path').textContent = 'Select a drive:';
     $('ls-browse-up').hidden = true;
     $('ls-select-folder').disabled = true;
@@ -178,6 +181,44 @@
     MW.api('api/library.php?action=drives')
       .then(function (data) { renderDrives(data.drives || []); })
       .catch(function (err) { msg('ls-msg', err.message, 'err'); });
+  }
+
+  /* ---------------- native Windows folder dialog (host only) ---------------- */
+
+  function nativePick() {
+    busy(true, 'Waiting for the Windows folder dialog — check this PC’s screen…');
+    MW.api('api/library.php?action=native_pick', { method: 'POST', body: {}, csrf: csrf })
+      .then(function (data) {
+        busy(false);
+        if (data.cancelled) {
+          msg('ls-msg', 'No folder selected.', 'err');
+          return;
+        }
+        showPickConfirm(data.path);
+      })
+      .catch(function (err) {
+        busy(false);
+        if (err.status === 401 || (err.status === 403 && err.code !== 'host_only')) {
+          MW.openLibrarySettings(); // session/CSRF expired → login form
+          return;
+        }
+        // Dialog unavailable or timed out → fall back to the in-site navigator.
+        msg('ls-msg', (err.message || 'The Windows folder dialog could not be opened.') +
+          ' Use the folder list instead.', 'err');
+        openBrowser();
+      });
+  }
+
+  function showPickConfirm(path) {
+    browsePath = path;
+    lastParent = null;
+    show('ls-browser');
+    $('ls-pick-hint').hidden = false;
+    $('ls-browse-path').textContent = path;
+    $('ls-browse-up').hidden = true;
+    $('ls-drives').hidden = true;
+    $('ls-dirs').hidden = true;
+    $('ls-select-folder').disabled = false;
   }
 
   function renderDrives(drives) {
@@ -290,7 +331,10 @@
 
     $('ls-change-folder').addEventListener('click', function () {
       msg('ls-msg', '');
-      openBrowser();
+      // The host PC gets the real Windows folder dialog; every other device
+      // keeps the in-site folder navigator (a dialog can only show on the PC).
+      if (isHost) nativePick();
+      else openBrowser();
     });
 
     $('ls-browse-up').addEventListener('click', browseUp);

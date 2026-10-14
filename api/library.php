@@ -7,6 +7,7 @@
  *   GET  ?action=drives                     admin  → drive list (probed, no shell)
  *   GET  ?action=browse&path=X              admin  → directories under X (dirs only)
  *   POST ?action=set      {path}            admin+CSRF → validate & save
+ *   POST ?action=native_pick                admin+CSRF+localhost → Windows folder dialog
  *   POST ?action=reset                      admin+CSRF → back to default folder
  *   POST ?action=scan                       admin+CSRF → force rescan, return counts
  *   POST ?action=login    {password}        public (throttled) → start admin session
@@ -16,10 +17,13 @@
  * Security: directory changes are administrative. Every mutating action
  * requires an authenticated admin session AND a session-bound CSRF token.
  * Browse responses contain directory names and canonical paths only —
- * no file listings, no file contents, no command execution anywhere.
+ * no file listings, no file contents. The only command execution in the
+ * project is native_pick's FIXED powershell call (no request data in the
+ * command line), further restricted to requests from the host machine.
  */
 declare(strict_types=1);
 require __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/native_picker.php';
 
 auth_boot();
 
@@ -92,6 +96,7 @@ if ($action === 'status') {
         'last_scan'   => $lastScan,
         'movie_count' => $movieCount,
         'counts'      => $scan['counts'] ?? null,
+        'is_host'     => picker_request_is_host(),   // Windows folder dialog allowed?
     ]);
 }
 
@@ -158,6 +163,26 @@ if ($action === 'set') {
         'counts'      => $fresh['counts'] ?? null,
         'last_scan'   => empty($fresh['error']) ? date('c', (int)$fresh['scanned_at']) : null,
     ]);
+}
+
+if ($action === 'native_pick') {
+    require_admin(true);
+    if (!picker_request_is_host()) {
+        api_error(
+            'The Windows folder picker can only be opened from this PC. On a phone or TV, use the folder list instead.',
+            403,
+            ['code' => 'host_only']
+        );
+    }
+    $picked = native_folder_picker(120);
+    if ($picked['cancelled']) {
+        json_response(['ok' => true, 'cancelled' => true]);
+    }
+    if (!$picked['ok']) {
+        $http = $picked['code'] === 'picker_timeout' ? 504 : 502;
+        api_error($picked['message'], $http, ['code' => $picked['code']]);
+    }
+    json_response(['ok' => true, 'cancelled' => false, 'path' => $picked['path']]);
 }
 
 if ($action === 'reset') {
