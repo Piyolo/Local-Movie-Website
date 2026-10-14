@@ -17,7 +17,7 @@ require __DIR__ . '/includes/page_header.php';
 <section id="hero" class="hero" hidden>
   <div class="hero-backdrop" id="hero-backdrop"></div>
   <div class="hero-body">
-    <p class="hero-kicker">Recently added</p>
+    <p class="hero-kicker">Featured</p>
     <h1 class="hero-title" id="hero-title"></h1>
     <p class="hero-meta" id="hero-meta"></p>
     <p class="hero-overview" id="hero-overview"></p>

@@ -1,13 +1,16 @@
 /**
  * MovieWebsite — homepage renderer.
- * Hero (most recent movie), Continue Watching, Recently Added, All Movies,
- * genre rows; empty and library-unavailable states; bounded metadata
- * enrichment kicked off after first paint.
+ * Rotating hero billboard (all movies, shuffled, fade out/in), Continue
+ * Watching, Recently Added, All Movies, genre rows; empty and
+ * library-unavailable states; bounded metadata enrichment kicked off after
+ * first paint.
  */
 (function () {
   'use strict';
   var MW = window.MW;
   var REFRESH_AFTER_ENRICH = 12000; // re-render once metadata arrives
+  var HERO_DWELL = 7000;  // ms on each featured movie
+  var HERO_FADE = 700;    // ms fade-out and fade-in
 
   function enrichPass(done) {
     // One bounded server pass; repeat while work remains, with breathing room
@@ -34,7 +37,6 @@
     var hero = document.getElementById('hero');
     if (!movie) { hero.hidden = true; return; }
     hero.hidden = false;
-
     var bd = document.getElementById('hero-backdrop');
     /* Real banner when TMDB provided one; otherwise a title-hue generated
      * gradient (a portrait poster stretched across the hero reads as blur). */
@@ -60,6 +62,89 @@
     document.getElementById('hero-details').setAttribute('href', movie.details_url);
   }
 
+  /* ---------------- rotating hero billboard ---------------- */
+
+  var heroSlides = [];
+  var heroIndex = 0;
+  var heroTimer = null;
+  var heroPaused = false;
+
+  function shuffle(list) {
+    var a = list.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function preloadNextSlide() {
+    var next = heroSlides[(heroIndex + 1) % heroSlides.length];
+    if (next && next.backdrop) {
+      var im = new Image();
+      im.src = next.backdrop;
+    }
+  }
+
+  function scheduleNextSlide() {
+    if (heroPaused || document.hidden) return; // resume paths re-schedule
+    if (heroTimer) clearTimeout(heroTimer);
+    heroTimer = setTimeout(advanceHeroSlide, HERO_DWELL);
+  }
+
+  function advanceHeroSlide() {
+    heroTimer = null;
+    var hero = document.getElementById('hero');
+    hero.classList.add('hero-fading'); // fade out current movie
+    setTimeout(function () {
+      heroIndex++;
+      if (heroIndex >= heroSlides.length) {
+        heroSlides = shuffle(heroSlides); // fresh order each loop
+        heroIndex = 0;
+      }
+      renderHero(heroSlides[heroIndex]);
+      preloadNextSlide();
+      hero.classList.remove('hero-fading'); // fade in next movie
+      scheduleNextSlide();
+    }, HERO_FADE);
+  }
+
+  /* Start (or refresh) the billboard. Keeps the current slide's position when
+   * a re-render happens (e.g. enrichment arrived) so it never jumps back. */
+  function startHero(movies) {
+    if (heroTimer) { clearTimeout(heroTimer); heroTimer = null; }
+    if (!movies || movies.length === 0) { heroSlides = []; renderHero(null); return; }
+
+    var currentId = heroSlides.length ? (heroSlides[heroIndex] || {}).id : null;
+    heroSlides = shuffle(movies);
+    heroIndex = 0;
+    if (currentId) {
+      for (var i = 0; i < heroSlides.length; i++) {
+        if (heroSlides[i].id === currentId) { heroIndex = i; break; }
+      }
+    }
+    renderHero(heroSlides[heroIndex]);
+    preloadNextSlide();
+    if (heroSlides.length > 1) scheduleNextSlide();
+  }
+
+  function wireHeroPauses() {
+    var hero = document.getElementById('hero');
+    // Pointer over the hero, or keyboard/remote focus on its buttons:
+    // hold the current slide until the user moves on (full dwell after).
+    hero.addEventListener('pointerenter', function () { heroPaused = true; if (heroTimer) { clearTimeout(heroTimer); heroTimer = null; } });
+    hero.addEventListener('pointerleave', function () { heroPaused = false; scheduleNextSlide(); });
+    hero.addEventListener('focusin', function () { heroPaused = true; if (heroTimer) { clearTimeout(heroTimer); heroTimer = null; } });
+    hero.addEventListener('focusout', function () {
+      if (!hero.contains(document.activeElement)) { heroPaused = false; scheduleNextSlide(); }
+    });
+    // Hidden tab: don't burn timers or swap unseen banners.
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) { if (heroTimer) { clearTimeout(heroTimer); heroTimer = null; } }
+      else scheduleNextSlide();
+    });
+  }
+
   function render(movies, progressMap) {
     var loading = document.getElementById('home-loading');
     loading.hidden = true;
@@ -75,9 +160,8 @@
     var rows = document.getElementById('home-rows');
     rows.hidden = false;
 
-    // Hero: most recently added movie.
-    var newest = movies.slice().sort(function (a, b) { return b.mtime - a.mtime; })[0];
-    renderHero(newest);
+    // Rotating hero billboard: all movies, shuffled each loop, fade out/in.
+    startHero(movies);
 
     // Continue Watching: progress entries, newest first, still-existing movies.
     var continueList = [];
@@ -144,6 +228,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     MW.banner(''); // clear stale banner
+    wireHeroPauses();
     Promise.all([MW.loadMovies(true), MW.getProgress()])
       .then(function (results) {
         var data = results[0];

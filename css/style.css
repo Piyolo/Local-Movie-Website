@@ -164,6 +164,11 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .92em; }
   position: relative; min-height: 68vh;
   display: flex; align-items: flex-end;
   padding: 0 48px 56px; overflow: hidden;
+  transition: opacity .7s ease;
+}
+.hero.hero-fading { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .hero { transition: none; }
 }
 .hero-backdrop {
   position: absolute; inset: 0;
