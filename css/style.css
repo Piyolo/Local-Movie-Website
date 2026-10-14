@@ -280,7 +280,9 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .92em; }
   position: relative; display: grid; grid-template-columns: 300px 1fr;
   gap: 44px; max-width: 1160px; margin: 0 auto; padding: 56px 48px 80px;
 }
-.details-poster-wrap { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); background: var(--panel-2); }
+/* align-self: start — without it the wrap stretches to the info column's
+ * height, exposing an empty panel-2 "tail" below the poster. */
+.details-poster-wrap { align-self: start; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); background: var(--panel-2); }
 .details-poster { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; }
 .details-info h1 { margin: 0 0 10px; font-size: clamp(1.8rem, 4vw, 2.8rem); }
 .details-meta { color: var(--muted); font-weight: 700; margin: 0 0 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
