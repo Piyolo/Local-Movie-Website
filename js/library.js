@@ -67,7 +67,7 @@
   var heroSlides = [];
   var heroIndex = 0;
   var heroTimer = null;
-  var heroPaused = false;
+  var heroWatchdog = null; // self-healing re-check while paused
 
   function shuffle(list) {
     var a = list.slice();
@@ -86,8 +86,33 @@
     }
   }
 
+  /* Pause is deliberately NOT stored as a flag: a remembered pause whose
+   * resume event never fired (stationary cursor after refresh, focus lost
+   * via navigation, a tab the TV browser never reports as visible) froze
+   * the billboard on its first slide. Every decision re-reads live state,
+   * and a 2s watchdog restarts rotation whenever that live state says go. */
+  function heroIsPaused() {
+    var hero = document.getElementById('hero');
+    return document.hidden ||
+      hero.matches(':hover') ||
+      hero.contains(document.activeElement);
+  }
+
+  function armHeroWatchdog() {
+    if (heroWatchdog) return;
+    heroWatchdog = setTimeout(function () {
+      heroWatchdog = null;
+      scheduleNextSlide(); // live conditions decide: resume or keep waiting
+    }, 2000);
+  }
+
   function scheduleNextSlide() {
-    if (heroPaused || document.hidden) return; // resume paths re-schedule
+    if (heroIsPaused()) {
+      if (heroTimer) { clearTimeout(heroTimer); heroTimer = null; }
+      armHeroWatchdog();
+      return;
+    }
+    if (heroWatchdog) { clearTimeout(heroWatchdog); heroWatchdog = null; }
     if (heroTimer) clearTimeout(heroTimer);
     heroTimer = setTimeout(advanceHeroSlide, HERO_DWELL);
   }
@@ -130,19 +155,17 @@
 
   function wireHeroPauses() {
     var hero = document.getElementById('hero');
-    // Pointer over the hero, or keyboard/remote focus on its buttons:
-    // hold the current slide until the user moves on (full dwell after).
-    hero.addEventListener('pointerenter', function () { heroPaused = true; if (heroTimer) { clearTimeout(heroTimer); heroTimer = null; } });
-    hero.addEventListener('pointerleave', function () { heroPaused = false; scheduleNextSlide(); });
-    hero.addEventListener('focusin', function () { heroPaused = true; if (heroTimer) { clearTimeout(heroTimer); heroTimer = null; } });
-    hero.addEventListener('focusout', function () {
-      if (!hero.contains(document.activeElement)) { heroPaused = false; scheduleNextSlide(); }
-    });
-    // Hidden tab: don't burn timers or swap unseen banners.
-    document.addEventListener('visibilitychange', function () {
-      if (document.hidden) { if (heroTimer) { clearTimeout(heroTimer); heroTimer = null; } }
-      else scheduleNextSlide();
-    });
+    // These events do not toggle any state — they only trigger a re-decision
+    // based on live conditions (hover / focus / visibility). A missing or
+    // unbalanced event can no longer freeze the rotation: the watchdog
+    // re-checks the same conditions every 2 seconds regardless.
+    hero.addEventListener('pointerenter', scheduleNextSlide);
+    hero.addEventListener('pointerleave', scheduleNextSlide);
+    hero.addEventListener('focusin', scheduleNextSlide);
+    hero.addEventListener('focusout', scheduleNextSlide);
+    document.addEventListener('visibilitychange', scheduleNextSlide);
+    // Back/forward cache restore: prior focus/pointer state is unverifiable.
+    window.addEventListener('pageshow', scheduleNextSlide);
   }
 
   function render(movies, progressMap) {
