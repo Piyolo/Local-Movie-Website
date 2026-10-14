@@ -1,0 +1,5 @@
+# Movie files are never served directly by Apache.
+# Delivery happens exclusively through api/stream.php, which validates the
+# requested movie id against the scanned library (path-traversal safe).
+Require all denied
+Options -Indexes

@@ -1,0 +1,20 @@
+# Never commit movie files (but ship the folder's protective .htaccess)
+assets/movies/*
+!assets/movies/.gitkeep
+!assets/movies/.htaccess
+
+# Private runtime data
+data/*.json
+!data/.gitkeep
+
+# Local secrets (TMDB API key) — commit the example instead
+includes/config.local.php
+
+# OS noise
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Local config backups and runtime lock files
+*.bak*
+data/*.lock

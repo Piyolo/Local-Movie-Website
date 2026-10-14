@@ -1,0 +1,49 @@
+/* ============================================================
+   MovieWebsite — responsive breakpoints
+   ============================================================ */
+
+@media (max-width: 1100px) {
+  .details-grid { grid-template-columns: 240px 1fr; gap: 30px; }
+}
+
+@media (max-width: 860px) {
+  .nav-inner { gap: 14px; padding: 0 16px; }
+  .nav-btn-label { display: none; }
+  .nav-links { gap: 2px; }
+  .nav-link { padding: 8px 10px; font-size: .88rem; }
+
+  .hero { min-height: 58vh; padding: 0 22px 40px; }
+  .hero-overview { -webkit-line-clamp: 4; }
+
+  .row-head, .browse-head { padding-left: 22px; padding-right: 22px; }
+  .row-scroller { grid-auto-columns: 148px; padding-left: 22px; padding-right: 22px; gap: 12px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); padding: 14px 22px 48px; gap: 16px 12px; }
+
+  .details-grid { grid-template-columns: 1fr; padding: 34px 22px 60px; gap: 22px; }
+  .details-poster-wrap { max-width: 220px; }
+
+  .dialog { padding: 20px 18px 24px; }
+  .ls-status { grid-template-columns: 1fr; gap: 2px 0; }
+  .ls-status dt { margin-top: 10px; }
+
+  .pc-row { flex-wrap: wrap; gap: 6px; }
+  .pc-seek { order: 10; flex-basis: 100%; }
+  .pc-vol { display: none; }
+  .pc-time { min-width: 46px; }
+}
+
+@media (max-width: 520px) {
+  .hero { min-height: 52vh; }
+  .hero-title { font-size: 1.8rem; }
+  .row-scroller { grid-auto-columns: 124px; }
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .browse-controls input[type="search"] { min-width: 100%; }
+  .browse-controls select { flex: 1; min-width: 0; }
+  .pc-btn { font-size: 1.05rem; min-width: 40px; }
+  .pc-text { font-size: .78rem; }
+}
+
+@media (hover: none) {
+  .card:hover { transform: none; }
+  .card-playhint { opacity: 1; transform: none; }
+}

@@ -1,0 +1,4 @@
+# Internal application code — never reachable over HTTP.
+# ( Defence in depth: every PHP file here also refuses direct execution. )
+Require all denied
+Options -Indexes

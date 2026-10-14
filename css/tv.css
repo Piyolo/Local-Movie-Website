@@ -1,0 +1,77 @@
+/* ============================================================
+   MovieWebsite — Smart TV / d-pad stylesheet
+   Loaded last. Emphasises large focus targets, unmistakable focus
+   rings, and no hover-only affordances.
+   ============================================================ */
+
+@media (pointer: coarse), (hover: none) {
+  /* Bigger everything for ten-foot UIs and remotes. */
+  :root { font-size: 18px; }
+  body { font-size: 1.02rem; }
+
+  .nav { height: 76px; }
+  :root { --nav-h: 76px; }
+  .nav-inner { padding: 0 40px; gap: 34px; }
+  .nav-link { padding: 12px 18px; font-size: 1.05rem; border-radius: 10px; }
+  .nav-btn { padding: 12px 18px; font-size: 1rem; }
+  .nav-btn-label { display: inline; }
+
+  .hero { min-height: 72vh; padding: 0 64px 70px; }
+  .hero-title { font-size: clamp(2.4rem, 6vw, 4.2rem); }
+  .hero-overview { font-size: 1.15rem; -webkit-line-clamp: 4; }
+  .btn-lg { padding: 18px 34px; font-size: 1.2rem; }
+  .btn { padding: 14px 24px; font-size: 1.05rem; }
+
+  .row-head { padding: 0 64px 14px; }
+  .row-head h2 { font-size: 1.7rem; }
+  .row-scroller { grid-auto-columns: 210px; gap: 22px; padding: 8px 64px 24px; }
+  .card-title { font-size: 1.05rem; }
+  .card-sub { font-size: .9rem; }
+  .card-playhint { width: 56px; height: 56px; font-size: 1.4rem; opacity: 1; transform: none; }
+
+  .grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); padding: 20px 64px 80px; gap: 26px 22px; }
+  .browse-head { padding: 40px 64px 6px; }
+  .browse-controls input[type="search"], .browse-controls select { padding: 15px 17px; font-size: 1.05rem; }
+
+  .details-grid { padding: 48px 64px 90px; }
+  .details-overview { font-size: 1.2rem; }
+
+  /* Focus must be obvious from across the room. */
+  :focus-visible {
+    outline: 4px solid var(--accent);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 8px rgba(232, 182, 76, .18);
+    border-radius: 12px;
+  }
+  .card:focus-visible { transform: translateY(-4px) scale(1.03); border-color: var(--accent); }
+  .pc-btn:focus-visible, .pc-menu-item:focus-visible, .browser-item:focus-visible { background: rgba(232, 182, 76, .18); }
+
+  /* Player controls sized for remotes. */
+  .pc-btn { min-width: 56px; min-height: 56px; font-size: 1.35rem; border-radius: 12px; }
+  .pc-text { font-size: 1rem; }
+  .pc-menu { min-width: 300px; bottom: 92px; right: 40px; }
+  .pc-menu-item { padding: 15px 18px; font-size: 1.05rem; }
+
+  /* Dialogs large and thumb-friendly. */
+  .dialog { padding: 30px 34px 36px; }
+  .browser-item { padding: 16px 18px; font-size: 1.05rem; }
+  .browser-list { max-height: 360px; }
+
+  .toast { bottom: 44px; font-size: 1.05rem; padding: 16px 26px; }
+}
+
+/* Users who ask for reduced motion get none of the easing. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001s !important;
+    transition-duration: .001s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Safety net for very old TV browsers without aspect-ratio support:
+   posters get an explicit height so cards never collapse. */
+@supports not (aspect-ratio: 2 / 3) {
+  .card-poster-wrap { height: 264px; }
+  .details-poster { height: 450px; }
+}

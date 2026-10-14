@@ -1,0 +1,21 @@
+# MovieWebsite root access rules (trusted-LAN application).
+# Deny listing, dotfiles, and any document that could leak internals.
+
+Options -Indexes
+
+# Dotfiles: .htaccess, .gitignore, .git internals, config.local.php, etc.
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Documents and data that must never be served.
+<FilesMatch "\.(md|json|log|ini|bak|old|lock|dist|example|yml|yaml)$">
+    Require all denied
+</FilesMatch>
+
+# Basic hardening headers (applies to everything under this directory).
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "same-origin"
+</IfModule>

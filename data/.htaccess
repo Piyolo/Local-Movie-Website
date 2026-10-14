@@ -1,0 +1,4 @@
+# Private runtime data (metadata cache, overrides, progress, scan cache).
+# Served only through the JSON API endpoints.
+Require all denied
+Options -Indexes
