@@ -78,11 +78,11 @@ $PAGE_SCRIPTS = $PAGE_SCRIPTS ?? [];
   </div>
 </div>
 
-<script src="<?= h(url('js/app.js')) ?>"></script>
-<script src="<?= h(url('js/preferences.js')) ?>"></script>
-<script src="<?= h(url('js/settings.js')) ?>"></script>
+<script src="<?= h(asset_url('js/app.js')) ?>"></script>
+<script src="<?= h(asset_url('js/preferences.js')) ?>"></script>
+<script src="<?= h(asset_url('js/settings.js')) ?>"></script>
 <?php foreach ($PAGE_SCRIPTS as $script) {
-    echo '<script src="' . h(url($script)) . '"></script>' . "\n";
+    echo '<script src="' . h(asset_url($script)) . '"></script>' . "\n";
 } ?>
 </body>
 </html>

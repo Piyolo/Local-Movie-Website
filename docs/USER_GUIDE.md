@@ -13,6 +13,7 @@
 
 | Action | Mouse/Touch | Keyboard | TV remote |
 |---|---|---|---|
+| Main menu | **Menu** button (left end of controls) | — | **Menu** — always visible, works even when the page was opened by typing the address |
 | Play/Pause | buttons / click video | Space or K | OK / Play button |
 | Seek ±10 s | drag seek bar | ← / → | ← / → |
 | Volume | volume slider | ↑ / ↓ (also M = mute) | ↑ / ↓ |

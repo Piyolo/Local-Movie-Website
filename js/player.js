@@ -28,15 +28,22 @@
   var hideTimer = null;
   var menuOpen = null;
 
-  // TV / touch-remote environments: there is no pointer to summon controls
-  // that hid themselves, and on Android-TV browsers the Fullscreen API hands
-  // the video to the system's own player (a native UI you must Back out of).
-  // MW.forceTv is a debug/test override.
+  // TV / touch-remote environments: no pointer to summon hidden controls,
+  // and their system players hijack the browser Fullscreen API (the native
+  // overlay you must Back out of). Detection: platform UA (Android covers
+  // Android/Google TV; Tizen/webOS/Roku/VIDAA named explicitly; phones and
+  // tablets) OR a touch-first media query. Desktop keeps native fullscreen.
+  // MW.forceTv is a debug/test override; watch.php?tvdebug=1 shows a report.
   function isTvLike() {
-    return MW.forceTv === true ||
-      !!(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+    if (MW.forceTv === true) return true;
+    var ua = navigator.userAgent || '';
+    if (/\b(Android|GoogleTV|SmartTV|HbbTV|Tizen|Web0S|Roku|VIDAA|NetCast|iPhone|iPad)\b/i.test(ua)) return true;
+    var m = window.matchMedia;
+    if (m && (m('(pointer: coarse)').matches || m('(hover: none)').matches)) return true;
+    return false;
   }
   var pseudoFull = false;
+  var PLAYER_BUILD = 'tvfix2';
 
   function $(id) { return document.getElementById(id); }
 
@@ -361,6 +368,12 @@
     $('bigplay').addEventListener('click', togglePlay);
     video.addEventListener('click', togglePlay);
 
+    // Direct route to the main menu — works even when the page was typed
+    // straight into the address bar (no history entry to go "back" to).
+    $('pc-home').addEventListener('click', function () {
+      location.href = root.getAttribute('data-index-url');
+    });
+
     video.addEventListener('play', function () {
       $('pc-play').textContent = '❚❚';
       $('bigplay').classList.add('hide');
@@ -511,11 +524,42 @@
     }
   }
 
+  /* ---------------- optional debug overlay (watch.php?tvdebug=1) ---------------- */
+
+  function showTvDebug() {
+    var params;
+    try { params = new URLSearchParams(location.search); } catch (e) { return; }
+    if (params.get('tvdebug') !== '1') return;
+    var m = window.matchMedia;
+    function mm(q) { try { return m ? String(m(q).matches) : 'no matchMedia'; } catch (e) { return 'error'; } }
+    var lines = [
+      'MovieWebsite player debug',
+      'build: ' + PLAYER_BUILD,
+      'isTvLike(): ' + isTvLike(),
+      'userAgent: ' + (navigator.userAgent || ''),
+      'pointer:coarse = ' + mm('(pointer: coarse)'),
+      'hover:none = ' + mm('(hover: none)'),
+      'hover:hover+pointer:fine = ' + mm('(hover: hover) and (pointer: fine)'),
+      'fullscreen API = ' + !!(stage.requestFullscreen || stage.webkitRequestFullscreen),
+      'url: ' + location.href,
+      '',
+      'isTvLike() true  → our fullscreen (expected on TVs)',
+      'isTvLike() false → browser fullscreen API (expected on desktop)'
+    ];
+    var box = document.createElement('pre');
+    box.id = 'tvdebug';
+    box.textContent = lines.join('\n');
+    box.style.cssText = 'position:fixed;left:0;top:0;right:0;z-index:9999;margin:0;padding:10px;' +
+      'background:rgba(0,0,0,.92);color:#4f4;font:13px/1.5 monospace;white-space:pre-wrap;pointer-events:none;';
+    document.body.appendChild(box);
+  }
+
   /* ---------------- boot ---------------- */
 
   document.addEventListener('DOMContentLoaded', function () {
     wireEvents();
     updateVolumeUI();
+    showTvDebug();
 
     MW.api('api/movie.php?id=' + encodeURIComponent(movieId))
       .then(function (data) {

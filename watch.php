@@ -44,6 +44,7 @@ require __DIR__ . '/includes/page_header.php';
 
     <div class="player-controls" id="controls">
       <div class="pc-row">
+        <button type="button" class="pc-btn pc-text" id="pc-home" aria-label="Back to main menu" title="Main menu">Menu</button>
         <button type="button" class="pc-btn" id="pc-play" aria-label="Play or pause">▶</button>
         <span class="pc-time" id="pc-current">0:00</span>
         <div class="pc-seek" id="pc-seek" role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">

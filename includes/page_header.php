@@ -21,9 +21,9 @@ $PAGE_BODY_CLASS = $PAGE_BODY_CLASS ?? '';
 <meta name="mw-base" content="<?= h(base_url()) ?>">
 <title><?= h($PAGE_TITLE) ?> · MovieWebsite</title>
 <link rel="icon" href="<?= h(url('assets/icons/logo.svg')) ?>" type="image/svg+xml">
-<link rel="stylesheet" href="<?= h(url('css/style.css')) ?>">
-<link rel="stylesheet" href="<?= h(url('css/responsive.css')) ?>">
-<link rel="stylesheet" href="<?= h(url('css/tv.css')) ?>">
+<link rel="stylesheet" href="<?= h(asset_url('css/style.css')) ?>">
+<link rel="stylesheet" href="<?= h(asset_url('css/responsive.css')) ?>">
+<link rel="stylesheet" href="<?= h(asset_url('css/tv.css')) ?>">
 </head>
 <body class="<?= h($PAGE_BODY_CLASS) ?>">
 

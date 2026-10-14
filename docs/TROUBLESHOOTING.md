@@ -89,6 +89,24 @@ dialog…") and eventually shows an error and the built-in folder list.
 - The dialog opens on the PC's screen — check behind other windows. You have
   2 minutes to pick or cancel.
 
+## The TV's own player still appears over the site's fullscreen
+
+1. **Reload the movie page first** — all CSS/JS is cache-busted now
+   (`?v=` version parameters), so a plain reload already fetches the newest
+   player code; no cache clearing needed.
+2. Add `&tvdebug=1` to the movie URL (or `?tvdebug=1` if it has no `?`). A
+   green overlay appears showing `build`, `isTvLike()`, the user agent, and
+   media-query values. Check the line `isTvLike()`:
+   - **`true`** → our own fullscreen is active; if a native player still
+     appears, note *exactly* which button opened fullscreen (the site's ⛶
+     button vs. any browser/TV menu) and send that screenshot.
+   - **`false`** → the TV browser is misreporting itself as a desktop; send
+     the overlay text (especially the `userAgent` line) so its pattern can be
+     added to detection.
+3. The **Menu** button (left end of the player controls) always returns to the
+   main menu — it does not depend on browser history, so typing the address
+   directly is fine.
+
 ## Site opens but looks unstyled / broken
 
 - Confirm the URL is exactly `http://<ip>/MovieWebsite/` (capital M and W as

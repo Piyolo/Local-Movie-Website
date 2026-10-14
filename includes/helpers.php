@@ -40,6 +40,18 @@ function url(string $path, array $query = []): string
     return $u;
 }
 
+/**
+ * URL for a CSS/JS asset with a file-mtime version parameter.
+ * TV browsers cache aggressively; changing content otherwise keeps serving
+ * stale player code until the user clears the cache.
+ */
+function asset_url(string $path): string
+{
+    $abs = dirname(__DIR__) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, ltrim($path, '/'));
+    $v = @filemtime($abs);
+    return url($path, ['v' => (string)($v !== false ? $v : 0)]);
+}
+
 /** Percent-encode one path segment (filenames with spaces/unicode/#/%). */
 function encode_segment(string $s): string
 {
