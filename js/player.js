@@ -255,6 +255,133 @@
     el.addEventListener('pointercancel', function () { dragging = false; });
   }
 
+  /* ---------------- hover preview scrubbing (desktop pointers only) ----------------
+   * A hidden second <video> seeks to the hovered position and its frame is
+   * drawn into a floating bubble (canvas), Netflix-style. Positions snap to
+   * 10s buckets; each bucket's frame is cloned in-page, so revisiting a spot
+   * is instant. The hidden video's source is attached only on first hover —
+   * TVs/phones build nothing and pay nothing. */
+
+  var pvBubble = null, pvCanvas = null, pvCtx = null, pvVideo = null;
+  var pvCache = {};        // bucket -> cloned canvas
+  var pvCacheN = 0;
+  var pvBucket = -1;       // last bucket shown (seek dedup)
+  var pvPending = -1;      // bucket awaiting a frame
+  var pvPendingT = 0;      // exact time requested (stale-seek guard)
+  var pvHideTimer = null;
+  var pvLastMove = 0;
+  var PV_BUCKET = 10;      // seconds per preview position
+  var PV_CACHE_MAX = 240;  // frames kept in-page (~40 min of film)
+
+  function pvEnabled() {
+    return !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+  }
+
+  function pvBuild() {
+    if (pvBubble) return;
+    pvBubble = document.createElement('div');
+    pvBubble.className = 'pc-preview';
+    pvCanvas = document.createElement('canvas');
+    pvCanvas.width = 160; pvCanvas.height = 90;
+    pvCtx = pvCanvas.getContext('2d');
+    pvCtx.fillStyle = '#000'; pvCtx.fillRect(0, 0, 160, 90);
+    pvBubble.appendChild(pvCanvas);
+    var tm = document.createElement('span');
+    tm.className = 'pv-time';
+    tm.textContent = '0:00';
+    pvBubble.appendChild(tm);
+    // Inside the stage: visible in normal view, pseudo-fullscreen, AND the
+    // desktop native fullscreen (only fullscreen-element descendants render).
+    stage.appendChild(pvBubble);
+
+    pvVideo = document.createElement('video');
+    pvVideo.muted = true;
+    pvVideo.defaultMuted = true;
+    pvVideo.preload = 'auto';
+    pvVideo.setAttribute('playsinline', '');
+    pvVideo.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:0;top:0;';
+    pvVideo.addEventListener('seeked', function () {
+      if (pvPending < 0 || !pvCtx) return;
+      if (Math.abs(pvVideo.currentTime - pvPendingT) > 0.5) return; // stale seek
+      var vw = pvVideo.videoWidth, vh = pvVideo.videoHeight;
+      if (!vw || !vh) { pvPending = -1; return; }
+      // cover-fit the frame into the 160×90 bubble canvas
+      var s = Math.max(160 / vw, 90 / vh);
+      var dw = vw * s, dh = vh * s;
+      pvCtx.fillStyle = '#000'; pvCtx.fillRect(0, 0, 160, 90);
+      pvCtx.drawImage(pvVideo, (160 - dw) / 2, (90 - dh) / 2, dw, dh);
+      var snap = document.createElement('canvas');
+      snap.width = 160; snap.height = 90;
+      snap.getContext('2d').drawImage(pvCanvas, 0, 0);
+      pvCache[pvPending] = snap;
+      pvCacheN++;
+      if (pvCacheN > PV_CACHE_MAX) {
+        // integer-like keys enumerate in ascending order = earliest film
+        // positions evicted first (they were visited longest ago)
+        for (var k in pvCache) { delete pvCache[k]; pvCacheN--; break; }
+      }
+      pvPending = -1;
+    });
+    pvVideo.addEventListener('error', function () { pvPending = -1; /* bubble keeps black frame + timestamp */ });
+    pvVideo.src = streamUrl; // lazy: attached only when someone actually hovers
+    stage.appendChild(pvVideo);
+  }
+
+  function pvSeek(bucket, t) {
+    pvPending = bucket;
+    pvPendingT = t;
+    var go = function () {
+      try { pvVideo.currentTime = t; } catch (e) { pvPending = -1; }
+    };
+    if (pvVideo.readyState >= 1) go();
+    else pvVideo.addEventListener('loadedmetadata', function h() {
+      pvVideo.removeEventListener('loadedmetadata', h);
+      go();
+    });
+  }
+
+  function pvShow(t, clientX) {
+    if (!pvEnabled() || !duration) return;
+    pvBuild();
+    var timeEl = pvBubble.lastChild;
+    timeEl.textContent = MW.fmtTime(t);
+
+    var bucket = Math.floor(t / PV_BUCKET);
+    var cached = pvCache[bucket];
+    if (cached) {
+      pvCtx.drawImage(cached, 0, 0);
+      pvPending = -1; // an in-flight seek for another bucket is no longer wanted
+    } else if (bucket !== pvBucket) {
+      pvCtx.fillStyle = '#000'; pvCtx.fillRect(0, 0, 160, 90); // loading
+      pvSeek(bucket, Math.min(duration - 0.2, bucket * PV_BUCKET + PV_BUCKET / 2));
+    }
+    pvBucket = bucket;
+
+    pvBubble.classList.add('show');
+    var half = (pvBubble.offsetWidth || 172) / 2;
+    var rect = $('pc-seek').getBoundingClientRect();
+    var x = rect.width < half * 2
+      ? rect.left + rect.width / 2
+      : Math.max(rect.left + half, Math.min(rect.right - half, clientX));
+    pvBubble.style.left = x + 'px';
+    pvBubble.style.top = (rect.top - pvBubble.offsetHeight - 10) + 'px';
+  }
+
+  function pvHide() {
+    if (pvHideTimer) { clearTimeout(pvHideTimer); pvHideTimer = null; }
+    pvBucket = -1;
+    if (pvBubble) pvBubble.classList.remove('show');
+  }
+
+  function pvFromKeyboard() {
+    if (!pvEnabled() || !duration) return;
+    var rect = $('pc-seek').getBoundingClientRect();
+    var ratio = video.currentTime / duration;
+    pvShow(video.currentTime, rect.left + rect.width * ratio);
+    if (pvHideTimer) clearTimeout(pvHideTimer);
+    pvHideTimer = setTimeout(pvHide, 1500); // auto-hide after arrow-scrubbing
+  }
+
   function updateSeekUI() {
     var pct = duration > 0 ? (video.currentTime / duration) * 100 : 0;
     $('pc-fill').style.width = pct + '%';
@@ -436,10 +563,25 @@
       updateVolumeUI();
     });
 
+    // Hover preview: nothing is built or fetched on TVs/touch (pvEnabled false).
+    if (pvEnabled()) {
+      $('pc-seek').addEventListener('pointermove', function (e) {
+        var now = Date.now();
+        if (now - pvLastMove < 80) return;
+        pvLastMove = now;
+        pvShow(sliderRatio($('pc-seek'), e.clientX) * duration, e.clientX);
+      });
+      $('pc-seek').addEventListener('pointerleave', pvHide);
+      $('pc-seek').addEventListener('pointerup', function () {
+        if (!$('pc-seek').matches(':hover')) pvHide();
+      });
+    }
+
     $('pc-seek').addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowLeft') { seekBy(-10); e.preventDefault(); }
-      if (e.key === 'ArrowRight') { seekBy(10); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { seekBy(-10); pvFromKeyboard(); e.preventDefault(); }
+      if (e.key === 'ArrowRight') { seekBy(10); pvFromKeyboard(); e.preventDefault(); }
     });
+    $('pc-seek').addEventListener('blur', pvHide);
     $('pc-vol').addEventListener('keydown', function (e) {
       if (e.key === 'ArrowDown') { setVolumeBy(-0.1); e.preventDefault(); }
       if (e.key === 'ArrowUp') { setVolumeBy(0.1); e.preventDefault(); }
