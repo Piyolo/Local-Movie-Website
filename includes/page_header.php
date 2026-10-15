@@ -27,6 +27,27 @@ $PAGE_BODY_CLASS = $PAGE_BODY_CLASS ?? '';
 </head>
 <body class="<?= h($PAGE_BODY_CLASS) ?>">
 
+<?php
+/* Inline SVG sprite — Phosphor Icons (MIT, assets/icons/). Symbols are
+ * referenced as <svg class="i"><use href="#i-play"/></svg> from markup and
+ * from JS (app.js MW.icon, player.js). Fixed list, no user input. */
+$MW_ICON_SPRITE = ['play', 'pause', 'star', 'arrow-right', 'x', 'speaker-high', 'speaker-x', 'arrows-out'];
+$mw_sprite = '';
+foreach ($MW_ICON_SPRITE as $mw_ico) {
+    $mw_file = dirname(__DIR__) . '/assets/icons/' . $mw_ico . '.svg';
+    if (!is_file($mw_file)) {
+        continue;
+    }
+    $mw_raw = file_get_contents($mw_file);
+    $mw_inner = preg_replace('/^.*?<svg[^>]*>/s', '', $mw_raw);
+    $mw_inner = preg_replace('/<\/svg>\s*$/s', '', $mw_inner);
+    $mw_sprite .= '  <symbol id="i-' . h($mw_ico) . '" viewBox="0 0 256 256">' . $mw_inner . "</symbol>\n";
+}
+?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display:none" aria-hidden="true" focusable="false">
+<?= $mw_sprite ?>
+</svg>
+
 <header class="nav" id="topnav">
   <div class="nav-inner">
     <a class="nav-logo" href="<?= h(url('index.php')) ?>" aria-label="MovieWebsite home">

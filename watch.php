@@ -40,12 +40,12 @@ require __DIR__ . '/includes/page_header.php';
       </div>
     </div>
 
-    <button type="button" class="player-bigplay" id="bigplay" aria-label="Play or pause">▶</button>
+    <button type="button" class="player-bigplay" id="bigplay" aria-label="Play or pause"><svg class="i" aria-hidden="true"><use href="#i-play" xlink:href="#i-play"></use></svg></button>
 
     <div class="player-controls" id="controls">
       <div class="pc-row">
         <button type="button" class="pc-btn pc-text" id="pc-home" aria-label="Back to main menu" title="Main menu">Menu</button>
-        <button type="button" class="pc-btn" id="pc-play" aria-label="Play or pause">▶</button>
+        <button type="button" class="pc-btn" id="pc-play" aria-label="Play or pause"><svg class="i" aria-hidden="true"><use href="#i-play" xlink:href="#i-play"></use></svg></button>
         <span class="pc-time" id="pc-current">0:00</span>
         <div class="pc-seek" id="pc-seek" role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
           <div class="pc-seek-buffer" id="pc-buffer"></div>
@@ -53,13 +53,13 @@ require __DIR__ . '/includes/page_header.php';
           <div class="pc-seek-thumb" id="pc-thumb"></div>
         </div>
         <span class="pc-time" id="pc-duration">0:00</span>
-        <button type="button" class="pc-btn" id="pc-mute" aria-label="Mute">🔊</button>
+        <button type="button" class="pc-btn" id="pc-mute" aria-label="Mute"><svg class="i" aria-hidden="true"><use href="#i-speaker-high" xlink:href="#i-speaker-high"></use></svg></button>
         <div class="pc-vol" id="pc-vol" role="slider" tabindex="0" aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
           <div class="pc-vol-fill" id="pc-vol-fill"></div>
         </div>
         <button type="button" class="pc-btn pc-text" id="pc-subs" aria-haspopup="true" aria-expanded="false">Subtitles</button>
         <button type="button" class="pc-btn pc-text" id="pc-speed" aria-haspopup="true" aria-expanded="false">1×</button>
-        <button type="button" class="pc-btn" id="pc-full" aria-label="Fullscreen">⛶</button>
+        <button type="button" class="pc-btn" id="pc-full" aria-label="Fullscreen"><svg class="i" aria-hidden="true"><use href="#i-arrows-out" xlink:href="#i-arrows-out"></use></svg></button>
       </div>
 
       <div class="pc-menu" id="menu-subs" hidden role="menu" aria-label="Subtitles"></div>

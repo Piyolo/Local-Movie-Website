@@ -43,7 +43,7 @@ require __DIR__ . '/includes/page_header.php';
         <p class="details-meta" id="details-meta"></p>
         <p class="details-overview" id="details-overview"></p>
         <div class="details-actions">
-          <a class="btn btn-primary btn-lg" id="details-play" href="#">▶ Play</a>
+          <a class="btn btn-primary btn-lg" id="details-play" href="#"><svg class="i" aria-hidden="true"><use href="#i-play" xlink:href="#i-play"></use></svg> Play</a>
           <button type="button" class="btn" id="details-resume" hidden>Resume</button>
         </div>
         <dl class="details-facts" id="details-facts"></dl>

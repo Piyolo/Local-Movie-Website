@@ -21,6 +21,9 @@ your home Wi-Fi.
   protected in-site navigator on any device), scan, and see counts and
   last-scan time. Works with external drives; keeps your choice when a drive
   is unplugged and recovers when it returns.
+- **Dark cinematic UI, fully offline**: self-hosted Archivo typography and a
+  Phosphor SVG icon set (no CDNs, no build step), pill controls, and layouts
+  tuned for desktop, phone, and TV-remote focus.
 
 ## Quick start
 
@@ -97,7 +100,7 @@ MovieWebsite/
   api/       JSON endpoints (movies, stream, subtitles, progress, library…)
   includes/  PHP core (scanner, parser, subtitles, metadata, auth…)  [HTTP-denied]
   css/ js/   vanilla CSS + JS, no build step
-  assets/    movies/ (default library)  posters/  subtitles/  icons/
+  assets/    movies/ (default library)  posters/  subtitles/  icons/  fonts/
   data/      runtime state: library config, progress, metadata cache  [HTTP-denied]
   tests/     CLI unit tests (php tests\unit.php)
   tools/     optional helper scripts (make_tv_copy.ps1)               [HTTP-denied]

@@ -18,7 +18,7 @@ $PAGE_SCRIPTS = $PAGE_SCRIPTS ?? [];
   <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="libsettings-title">
     <div class="dialog-head">
       <h2 id="libsettings-title">Library Settings</h2>
-      <button type="button" class="icon-btn" id="libsettings-close" aria-label="Close">✕</button>
+      <button type="button" class="icon-btn" id="libsettings-close" aria-label="Close"><svg class="i" aria-hidden="true"><use href="#i-x" xlink:href="#i-x"></use></svg></button>
     </div>
 
     <!-- Sign-in / first-run setup -->

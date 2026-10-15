@@ -50,9 +50,19 @@
     var metaBits = [];
     if (movie.year) metaBits.push(String(movie.year));
     if (movie.runtime) metaBits.push(movie.runtime);
-    if (movie.rating) metaBits.push('★ ' + movie.rating);
+    if (movie.rating) metaBits.push({ icon: 'star', text: String(movie.rating) });
     if (movie.subtitle_count > 0) metaBits.push(movie.subtitle_count + ' subtitles');
-    document.getElementById('hero-meta').textContent = metaBits.join('  ·  ');
+    var heroMeta = document.getElementById('hero-meta');
+    heroMeta.textContent = '';
+    metaBits.forEach(function (bit, i) {
+      if (i) heroMeta.appendChild(document.createTextNode('  ·  '));
+      if (bit && typeof bit === 'object') {
+        heroMeta.appendChild(MW.icon(bit.icon));
+        heroMeta.appendChild(document.createTextNode(' ' + bit.text));
+      } else {
+        heroMeta.appendChild(document.createTextNode(bit));
+      }
+    });
 
     var ov = document.getElementById('hero-overview');
     ov.textContent = movie.overview || ('File: ' + movie.filename);

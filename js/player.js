@@ -8,6 +8,10 @@
 (function () {
   'use strict';
   var MW = window.MW;
+  /* Inline icon from the sprite in page_header.php (see .i in style.css). */
+  var ic = function (name) {
+    return '<svg class="i" aria-hidden="true"><use href="#i-' + name + '" xlink:href="#i-' + name + '"></use></svg>';
+  };
   var root = document.getElementById('player');
   if (!root) return;
 
@@ -431,7 +435,7 @@
   function updateVolumeUI() {
     $('pc-vol-fill').style.width = Math.round(video.volume * 100) + '%';
     $('pc-vol').setAttribute('aria-valuenow', Math.round(video.volume * 100));
-    $('pc-mute').textContent = video.muted || video.volume === 0 ? '🔇' : '🔊';
+    $('pc-mute').innerHTML = video.muted || video.volume === 0 ? ic('speaker-x') : ic('speaker-high');
   }
 
   /* ---------------- progress saving ---------------- */
@@ -560,13 +564,13 @@
     });
 
     video.addEventListener('play', function () {
-      $('pc-play').textContent = '❚❚';
+      $('pc-play').innerHTML = ic('pause');
       $('bigplay').classList.add('hide');
       $('player-loading').hidden = true;
       showControls();
     });
     video.addEventListener('pause', function () {
-      $('pc-play').textContent = '▶';
+      $('pc-play').innerHTML = ic('play');
       $('bigplay').classList.remove('hide');
       $('controls').classList.remove('hide');
       saveProgress(false);

@@ -22,7 +22,7 @@ require __DIR__ . '/includes/page_header.php';
     <p class="hero-meta" id="hero-meta"></p>
     <p class="hero-overview" id="hero-overview"></p>
     <div class="hero-actions">
-      <a class="btn btn-primary btn-lg" id="hero-play" href="#">▶ Play</a>
+      <a class="btn btn-primary btn-lg" id="hero-play" href="#"><svg class="i" aria-hidden="true"><use href="#i-play" xlink:href="#i-play"></use></svg> Play</a>
       <a class="btn btn-lg" id="hero-details" href="#">Details</a>
     </div>
   </div>
@@ -50,7 +50,7 @@ require __DIR__ . '/includes/page_header.php';
   <section class="row" id="row-all" hidden>
     <div class="row-head">
       <h2>All Movies</h2>
-      <a class="row-more" id="all-movies-link" href="search.php">Browse all →</a>
+      <a class="row-more" id="all-movies-link" href="search.php">Browse all <svg class="i" aria-hidden="true"><use href="#i-arrow-right" xlink:href="#i-arrow-right"></use></svg></a>
     </div>
     <div class="row-scroller" id="all-scroller"></div>
   </section>

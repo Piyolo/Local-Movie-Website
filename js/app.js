@@ -109,6 +109,18 @@
     return node;
   };
 
+  /* Inline icon from the sprite in page_header.php: MW.icon('play') → <svg class="i"> */
+  MW.icon = function (name) {
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'i');
+    svg.setAttribute('aria-hidden', 'true');
+    var use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    use.setAttribute('href', '#i-' + name);
+    use.setAttribute('xlink:href', '#i-' + name);
+    svg.appendChild(use);
+    return svg;
+  };
+
   MW.qs = function (sel, root) { return (root || document).querySelector(sel); };
   MW.qsa = function (sel, root) {
     return Array.prototype.slice.call((root || document).querySelectorAll(sel));
@@ -278,7 +290,9 @@
     var img = MW.posterImage(movie);
     if (img) pw.appendChild(img);
     else pw.appendChild(MW.posterFallback(movie.title, movie.year));
-    pw.appendChild(MW.el('div', { class: 'card-playhint', text: '▶', 'aria-hidden': 'true' }));
+    var hint = MW.el('div', { class: 'card-playhint', 'aria-hidden': 'true' });
+    hint.appendChild(MW.icon('play'));
+    pw.appendChild(hint);
     card.appendChild(pw);
 
     card.appendChild(MW.el('div', { class: 'card-title', text: movie.title }));
