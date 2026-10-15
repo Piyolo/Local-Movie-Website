@@ -4,7 +4,13 @@
    rings, and no hover-only affordances.
    ============================================================ */
 
-@media (pointer: coarse), (hover: none) {
+/* Gated to TV-sized screens: coarse-pointer devices narrower than 1100px
+   are phones/tablets and must get the compact responsive.css layout
+   instead — without this width gate, phones matched (pointer: coarse)
+   and received the full ten-foot TV scaling (18px root font, 76px nav,
+   72vh hero, 210px cards, 56px player buttons). Real TVs are always
+   1280+ CSS px (720p/1080p), so they are unaffected. */
+@media (pointer: coarse) and (min-width: 1100px), (hover: none) and (min-width: 1100px) {
   /* Bigger everything for ten-foot UIs and remotes. */
   :root { font-size: 18px; }
   body { font-size: 1.02rem; }
