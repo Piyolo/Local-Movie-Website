@@ -202,6 +202,11 @@ code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .92em; }
 .row-scroller {
   display: grid; grid-auto-flow: column; grid-auto-columns: 176px;
   gap: 16px; overflow-x: auto; padding: 6px 48px 18px;
+  /* Without matching scroll-padding the snapport ignores the leading
+     padding: Chrome initial-snaps overflowing rows to the first card's
+     snap point (scrollLeft = 48), locking the first card flush to the
+     left edge. This insets the snapport by the gutters instead. */
+  scroll-padding-left: 48px; scroll-padding-right: 48px;
   scroll-snap-type: x proximity; scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, .25) transparent;
 }

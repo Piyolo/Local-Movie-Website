@@ -29,7 +29,7 @@
   .hero-overview { -webkit-line-clamp: 4; }
 
   .row-head, .browse-head { padding-left: 22px; padding-right: 22px; }
-  .row-scroller { grid-auto-columns: 148px; padding-left: 22px; padding-right: 22px; gap: 12px; }
+  .row-scroller { grid-auto-columns: 148px; padding-left: 22px; padding-right: 22px; gap: 12px; scroll-padding-left: 22px; scroll-padding-right: 22px; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); padding: 14px 22px 48px; gap: 16px 12px; }
 
   /* minmax(0, …) drops the min-content floor: long filenames in
@@ -71,7 +71,7 @@
   .row-head { padding: 0 14px 8px; }
   .row-head h2 { font-size: 1.05rem; }
   .row-more { font-size: .78rem; }
-  .row-scroller { grid-auto-columns: 108px; gap: 8px; padding: 4px 14px 12px; }
+  .row-scroller { grid-auto-columns: 108px; gap: 8px; padding: 4px 14px 12px; scroll-padding-left: 14px; scroll-padding-right: 14px; }
   .card-title { padding: 6px 8px 2px; font-size: .76rem; }
   .card-sub { padding: 0 8px 8px; font-size: .68rem; }
   .card-playhint { width: 32px; height: 32px; font-size: .85rem; inset: auto 8px 38px auto; }
