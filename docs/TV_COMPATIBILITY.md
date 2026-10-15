@@ -36,17 +36,27 @@ Details: `TROUBLESHOOTING.md → "Playback spins forever on a TV"`.
   (detected by platform UA — Android/Google TV, Tizen, webOS, Roku, phones —
   or by coarse-pointer/no-hover media queries) the fullscreen button uses our
   own full-bleed layout instead of the browser Fullscreen API, so TV browsers
-  can't open their native player overlay on top of ours. Desktop keeps native
-  fullscreen. Remote Back (or Esc) exits fullscreen first; a second Back — or
+  can't open their native player overlay on top of ours. Phones and desktop
+  keep native fullscreen (phones also request a landscape orientation lock).
+  Remote Back (or Esc) exits fullscreen first; a second Back — or
   the always-visible **Menu** button — reaches the main menu.
+- **Device split** (`classifyMode` in `js/player.js`, tested in
+  `tests/player_mode.test.js`): UAs carrying a `Mobile`/iOS device token are
+  phones even when they say "Android" or have a coarse pointer; TVs are the
+  named TV runtimes (Tizen/webOS/Roku/VIDAA/NetCast/GoogleTV/SmartTV/HbbTV)
+  or Android *without* the `Mobile` token (Android TV / Google TV browsers
+  never say `Mobile`). Unknown touch devices fall back to touch-first
+  detection, keeping the safe always-visible-controls behavior.
 - **Assets are cache-busted** (`?v=filemtime` on every CSS/JS URL): TV browsers
   cache aggressively, and stale player code was the old cause of inconsistent
   fullscreen behavior between typed URLs and history navigation.
 - **Diagnostics**: open a movie as `watch.php?id=…&tvdebug=1` — a green overlay
   reports the player build, the detection result, UA, and media-query values,
   which makes any future fullscreen issue reportable in one screenshot.
-- **Controls stay visible while playing** on TV/touch devices — they only
-  auto-hide for mouse users (where there is always a way to bring them back).
+- **Controls stay visible while playing** on TVs and unknown touch devices —
+  they auto-hide for phones and mouse users (both always have a way to bring
+  them back: a tap on the video, or any pointer/key movement; on phones the
+  first tap only reveals the controls, a second tap pauses).
 - Fail-fast messages instead of silent hangs: 12-second stall detection
   ("This device cannot play the video…") and an upfront `canPlayType` check
   for MP4/H.264 support.

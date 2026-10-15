@@ -30,20 +30,40 @@
 
   // TV / touch-remote environments: no pointer to summon hidden controls,
   // and their system players hijack the browser Fullscreen API (the native
-  // overlay you must Back out of). Detection: platform UA (Android covers
-  // Android/Google TV; Tizen/webOS/Roku/VIDAA named explicitly; phones and
-  // tablets) OR a touch-first media query. Desktop keeps native fullscreen.
+  // overlay you must Back out of). Phones are the opposite case: a tap
+  // summons controls, and native fullscreen is what mobile users expect.
+  //
+  // classifyMode(ua) is the pure UA split (unit-tested in tests/
+  // player_mode.test.js):
+  //   'mobile' — carries the "Mobile"/iOS device token → phone player,
+  //              even though the UA also says Android and the pointer is
+  //              coarse (that used to shove every phone into TV mode).
+  //   'tv'     — named TV runtimes, or Android WITHOUT the "Mobile" token
+  //              (Android TV / Google TV browsers never say "Mobile").
+  //   'other'  — desktops and unknowns; isTvLike() falls back to the
+  //              touch-first media queries, so odd tablets and no-name TV
+  //              browsers keep the safe always-visible-controls behavior.
   // MW.forceTv is a debug/test override; watch.php?tvdebug=1 shows a report.
+  function classifyMode(ua) {
+    if (/\b(Mobile|iPhone|iPad|iPod)\b/i.test(ua)) return 'mobile';
+    if (/\b(GoogleTV|SmartTV|HbbTV|Tizen|Web0S|Roku|VIDAA|NetCast|Android)\b/i.test(ua)) return 'tv';
+    return 'other';
+  }
   function isTvLike() {
     if (MW.forceTv === true) return true;
-    var ua = navigator.userAgent || '';
-    if (/\b(Android|GoogleTV|SmartTV|HbbTV|Tizen|Web0S|Roku|VIDAA|NetCast|iPhone|iPad)\b/i.test(ua)) return true;
+    var mode = classifyMode(navigator.userAgent || '');
+    if (mode === 'tv') return true;
+    if (mode === 'mobile') return false;
     var m = window.matchMedia;
     if (m && (m('(pointer: coarse)').matches || m('(hover: none)').matches)) return true;
     return false;
   }
+  function isTouchLike() {
+    var m = window.matchMedia;
+    return !!(m && m('(pointer: coarse)').matches);
+  }
   var pseudoFull = false;
-  var PLAYER_BUILD = 'tvfix2';
+  var PLAYER_BUILD = 'tvfix3';
 
   function $(id) { return document.getElementById(id); }
 
@@ -475,6 +495,28 @@
     if (pseudoFull) setPseudoFullscreen(false); // Back exits fullscreen, stays on page
   });
 
+  // Best-effort landscape rotation while fullscreen (phones). Unsupported
+  // browsers (desktop, iOS) reject/absorb it silently — the try/catch and
+  // promise guard make it a no-op there. Always released on fullscreen exit
+  // via the fullscreenchange listener below.
+  function setOrientationLock(on) {
+    try {
+      var o = screen.orientation;
+      if (!o) return;
+      if (on) {
+        if (!o.lock) return;
+        var r = o.lock('landscape');
+        if (r && typeof r.catch === 'function') r.catch(function () {});
+      } else if (o.unlock) o.unlock();
+    } catch (e) { /* unsupported */ }
+  }
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) setOrientationLock(false);
+    });
+  });
+
   function toggleFullscreen() {
     if (isTvLike()) {
       // Never use the Fullscreen API on TVs: Android-TV browsers respond by
@@ -485,15 +527,31 @@
     }
     if (document.fullscreenElement || document.webkitFullscreenElement) {
       (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-    } else if (stage.requestFullscreen) stage.requestFullscreen();
-    else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
-    else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen(); // iOS
+    } else if (stage.requestFullscreen) {
+      var p = stage.requestFullscreen();
+      if (p && typeof p.then === 'function') {
+        p.then(function () { setOrientationLock(true); }).catch(function () {});
+      } else setOrientationLock(true);
+    } else if (stage.webkitRequestFullscreen) {
+      stage.webkitRequestFullscreen();
+      setOrientationLock(true);
+    } else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen(); // iOS rotates itself
   }
 
   function wireEvents() {
     $('pc-play').addEventListener('click', togglePlay);
     $('bigplay').addEventListener('click', togglePlay);
-    video.addEventListener('click', togglePlay);
+    video.addEventListener('click', function () {
+      // Phone: the tap that summons a hidden overlay shouldn't also pause
+      // the movie — only a tap on an already-visible overlay toggles.
+      // (Desktop/TV keep plain click-to-toggle: controlsHiddenAtTap is only
+      // honored when we're in phone mode with a touch pointer.)
+      if (controlsHiddenAtTap && !isTvLike() && isTouchLike()) {
+        controlsHiddenAtTap = false;
+        return;
+      }
+      togglePlay();
+    });
 
     // Direct route to the main menu — works even when the page was typed
     // straight into the address bar (no history entry to go "back" to).
@@ -610,7 +668,14 @@
     });
 
     document.addEventListener('mousemove', showControls);
-    document.addEventListener('pointerdown', function () { showControls(); });
+    // Captured here because this listener (bubble phase) runs before the
+    // video's click handler: it records whether the overlay was hidden AT
+    // TAP START, then reveals it.
+    var controlsHiddenAtTap = false;
+    document.addEventListener('pointerdown', function () {
+      controlsHiddenAtTap = $('controls').classList.contains('hide');
+      showControls();
+    });
 
     document.addEventListener('keydown', function (e) {
       if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
@@ -678,6 +743,8 @@
       'MovieWebsite player debug',
       'build: ' + PLAYER_BUILD,
       'isTvLike(): ' + isTvLike(),
+      'deviceMode: ' + classifyMode(navigator.userAgent || ''),
+      'touchLike: ' + isTouchLike(),
       'userAgent: ' + (navigator.userAgent || ''),
       'pointer:coarse = ' + mm('(pointer: coarse)'),
       'hover:none = ' + mm('(hover: none)'),
@@ -686,7 +753,7 @@
       'url: ' + location.href,
       '',
       'isTvLike() true  → our fullscreen (expected on TVs)',
-      'isTvLike() false → browser fullscreen API (expected on desktop)'
+      'isTvLike() false → browser fullscreen API (expected on phones & desktop)'
     ];
     var box = document.createElement('pre');
     box.id = 'tvdebug';
