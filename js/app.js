@@ -32,6 +32,30 @@
     };
   }
 
+  /* ---------------- mobile nav menu ----------------
+   * The burger button is only displayed <=860px by CSS; on desktop and
+   * TVs this wires up but the button never renders and nothing changes. */
+  var navRoot = document.getElementById('topnav');
+  var navBurger = document.getElementById('nav-burger');
+  var navPanel = document.getElementById('nav-links');
+  if (navRoot && navBurger && navPanel) {
+    var setNavOpen = function (open) {
+      navRoot.classList.toggle('menu-open', open);
+      navBurger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    navBurger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setNavOpen(!navRoot.classList.contains('menu-open'));
+    });
+    navPanel.addEventListener('click', function () { setNavOpen(false); }); // link chosen
+    document.addEventListener('click', function (e) {
+      if (navRoot.classList.contains('menu-open') && !navRoot.contains(e.target)) setNavOpen(false);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') setNavOpen(false);
+    });
+  }
+
   /* ---------------- API ---------------- */
 
   MW.api = function (path, opts) {

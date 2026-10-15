@@ -3,14 +3,27 @@
    ============================================================ */
 
 @media (max-width: 1100px) {
-  .details-grid { grid-template-columns: 240px 1fr; gap: 30px; }
+  .details-grid { grid-template-columns: 240px minmax(0, 1fr); gap: 30px; }
 }
 
 @media (max-width: 860px) {
+  /* Links collapse into a dropdown panel opened by the burger button —
+     logo + burger + settings no longer overflow phone-width viewports. */
   .nav-inner { gap: 14px; padding: 0 16px; }
   .nav-btn-label { display: none; }
-  .nav-links { gap: 2px; }
-  .nav-link { padding: 8px 10px; font-size: .88rem; }
+  .nav-burger { display: inline-flex; }
+  .nav-links {
+    position: absolute; top: calc(100% - 4px); right: 12px;
+    display: none; flex: none;
+    flex-direction: column; align-items: stretch; gap: 2px;
+    min-width: 190px; padding: 6px;
+    background: rgba(13, 15, 20, .98);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow);
+  }
+  .nav.menu-open .nav-links { display: flex; }
+  .nav-link { padding: 12px 14px; font-size: .95rem; border-radius: 8px; }
+  .nav-link.active { background: rgba(255, 255, 255, .08); }
 
   .hero { min-height: 58vh; padding: 0 22px 40px; }
   .hero-overview { -webkit-line-clamp: 4; }
@@ -19,7 +32,9 @@
   .row-scroller { grid-auto-columns: 148px; padding-left: 22px; padding-right: 22px; gap: 12px; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); padding: 14px 22px 48px; gap: 16px 12px; }
 
-  .details-grid { grid-template-columns: 1fr; padding: 34px 22px 60px; gap: 22px; }
+  /* minmax(0, …) drops the min-content floor: long filenames in
+     .details-facts would otherwise widen this column past the viewport. */
+  .details-grid { grid-template-columns: minmax(0, 1fr); padding: 34px 22px 60px; gap: 22px; }
   .details-poster-wrap { max-width: 220px; }
 
   .dialog { padding: 20px 18px 24px; }
